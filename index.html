@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiku</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #050b18; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            font-family: Arial, sans-serif; 
+            overflow: hidden;
+            color: white;
+            position: relative;
+        }
+
+        #starContainer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at bottom, #1b2735 0%, #090a0f 100%);
+            z-index: -1;
+        }
+        .star {
+            position: absolute; background: white; border-radius: 50%;
+            animation: twinkle 2s infinite ease-in-out;
+        }
+        @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+        /* ধীরগতির রকেট অ্যানিমেশন */
+        .rocket {
+            position: absolute;
+            bottom: -50px;
+            left: -50px; /* বামদিকের কোণা থেকে শুরু */
+            font-size: 24px;
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
+            animation: flyToMoon 15s linear infinite; /* গতি অনেক কমানো হয়েছে (15s) */
+            z-index: -1;
+            transform: rotate(15deg);
+        }
+
+        @keyframes flyToMoon {
+            0% { 
+                transform: translate(0, 0) rotate(15deg); 
+                opacity: 0; 
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { 
+                /* চাঁদের অবস্থানের দিকে যাত্রা (Top-Right) */
+                transform: translate(110vw, -110vh) rotate(15deg); 
+                opacity: 0; 
+            }
+        }
+
+        .moon {
+            position: absolute; top: 10%; right: 10%; width: 55px; height: 55px;
+            background: #fdfae5; border-radius: 50%;
+            box-shadow: 0 0 20px rgba(253, 250, 229, 0.4);
+        }
+
+        #astro {
+            position: absolute; width: 24px; height: 32px; z-index: 100;
+            top: 11%; right: 12%;
+            display: flex; flex-direction: column; align-items: center;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .astro-head { 
+            width: 18px; height: 16px; background: white; 
+            border-radius: 8px 8px 5px 5px; border: 1.5px solid #ddd;
+        }
+        .astro-visor {
+            width: 12px; height: 7px; background: #334; border-radius: 3px; margin: 3.5px auto;
+        }
+        .astro-body { 
+            width: 20px; height: 15px; background: white; 
+            border-radius: 5px 5px 7px 7px; margin-top: -2px; border: 1.5px solid #ddd;
+        }
+        .hi-bubble {
+            position: absolute; top: -30px; background: #ff69b4; 
+            color: white; padding: 2px 8px; border-radius: 10px; 
+            font-size: 10px; font-weight: bold; display: none; white-space: nowrap;
+        }
+
+        .title { font-size: 1rem; color: #ccc; margin-bottom: 20px; }
+        .countdown { display: flex; gap: 8px; margin-bottom: 30px; }
+        .box { 
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px; border-radius: 12px; min-width: 65px; text-align: center;
+            backdrop-filter: blur(5px);
+        }
+        .num { display: block; font-size: 20px; font-weight: bold; }
+        .label { font-size: 8px; color: #888; text-transform: uppercase; }
+
+        .btn {
+            border: 1px solid white; padding: 10px 28px; border-radius: 25px;
+            color: white; text-decoration: none; font-size: 13px; cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn:hover { background: white; color: black; }
+
+        .secret-msg {
+            position: absolute;
+            bottom: 15px;
+            right: 20px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            font-style: italic;
+            letter-spacing: 0.5px;
+        }
+
+        @keyframes jumpEffect {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-30px); }
+        }
+        .jumping { animation: jumpEffect 1.2s ease-in-out; }
+    </style>
+</head>
+<body>
+
+    <div id="starContainer"></div>
+    <div class="moon"></div>
+
+    <div id="astro">
+        <div class="hi-bubble" id="hi">Hi Tiku! 👋</div>
+        <div class="astro-head"><div class="astro-visor"></div></div>
+        <div class="astro-body"></div>
+    </div>
+
+    <div class="title">Nearly there...</div>
+
+    <div class="countdown">
+        <div class="box" id="b1"><span class="num" id="d">00</span><span class="label">Days</span></div>
+        <div class="box" id="b2"><span class="num" id="h">00</span><span class="label">Hours</span></div>
+        <div class="box" id="b3"><span class="num" id="m">00</span><span class="label">Min</span></div>
+        <div class="box" id="b4"><span class="num" id="s">00</span><span class="label">Sec</span></div>
+    </div>
+
+    <div class="btn">Blow out the candle</div>
+
+    <div class="secret-msg">Tiku guess koro eitah kiser jonno😼?</div>
+
+    <script>
+        function createStars() {
+            const container = document.getElementById('starContainer');
+            for (let i = 0; i < 80; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const size = Math.random() * 2 + 1 + 'px';
+                star.style.width = size;
+                star.style.height = size;
+                star.style.top = Math.random() * 100 + '%';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                container.appendChild(star);
+            }
+        }
+
+        // একটি রকেট তৈরির ফাংশন
+        function createSingleRocket() {
+            const rocket = document.createElement('div');
+            rocket.className = 'rocket';
+            rocket.innerHTML = '🚀';
+            document.body.appendChild(rocket);
+        }
+
+        function startCountdown() {
+            const targetDate = new Date('May 24, 2026 00:00:00').getTime();
+            function update() {
+                const now = new Date().getTime();
+                const diff = targetDate - now;
+                if (diff <= 0) return;
+                document.getElementById('d').innerText = Math.floor(diff / (1000 * 60 * 60 * 24));
+                document.getElementById('h').innerText = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+                document.getElementById('m').innerText = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+                document.getElementById('s').innerText = Math.floor((diff % (1000 * 60)) / 1000).toString().padStart(2, '0');
+            }
+            setInterval(update, 1000);
+            update();
+        }
+
+        const boxes = ['b1', 'b2', 'b3', 'b4'];
+        function jumpSequence(step) {
+            if (step >= boxes.length) {
+                const hi = document.getElementById('hi');
+                if(hi) hi.style.display = 'block';
+                return;
+            }
+            const astro = document.getElementById('astro');
+            const targetBox = document.getElementById(boxes[step]);
+            if(!astro || !targetBox) return;
+            
+            const rect = targetBox.getBoundingClientRect();
+            astro.style.top = (rect.top - 40) + 'px';
+            astro.style.left = (rect.left + rect.width/2 - 12) + 'px';
+            astro.style.right = 'auto';
+
+            astro.classList.add('jumping');
+            setTimeout(() => {
+                astro.classList.remove('jumping');
+                jumpSequence(step + 1);
+            }, 950);
+        }
+
+        window.onload = function() {
+            createStars();
+            createSingleRocket();
+            startCountdown();
+            setTimeout(() => jumpSequence(0), 1500);
+        };
+    </script>
+</body>
+</html>
