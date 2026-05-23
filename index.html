@@ -3,18 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tiku</title>
+    <title>Birthday Countdown & Surprise</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            background: #050b18; 
-            height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            font-family: Arial, sans-serif; 
+        body, html { 
+            width: 100%;
+            height: 100%;
             overflow: hidden;
+            background: #050b18; 
+            font-family: Arial, sans-serif; 
             color: white;
             position: relative;
         }
@@ -22,44 +19,58 @@
         #starContainer {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at bottom, #1b2735 0%, #090a0f 100%);
-            z-index: -1;
+            z-index: 1; 
+            pointer-events: none;
         }
         .star {
             position: absolute; background: white; border-radius: 50%;
             animation: twinkle 2s infinite ease-in-out;
         }
+        .star-entry {
+            position: absolute; background: white; border-radius: 50%;
+            animation: twinkleEntry 2s infinite ease-in-out;
+        }
         @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+        @keyframes twinkleEntry { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
-        /* ধীরগতির রকেট অ্যানিমেশন */
         .rocket {
             position: absolute;
             bottom: -50px;
-            left: -50px; /* বামদিকের কোণা থেকে শুরু */
+            left: -50px; 
             font-size: 24px;
             filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
-            animation: flyToMoon 15s linear infinite; /* গতি অনেক কমানো হয়েছে (15s) */
-            z-index: -1;
+            animation: flyToMoon 15s linear infinite; 
+            z-index: 2; 
             transform: rotate(15deg);
         }
 
         @keyframes flyToMoon {
-            0% { 
-                transform: translate(0, 0) rotate(15deg); 
-                opacity: 0; 
-            }
+            0% { transform: translate(0, 0) rotate(15deg); opacity: 0; }
             10% { opacity: 1; }
             90% { opacity: 1; }
-            100% { 
-                /* চাঁদের অবস্থানের দিকে যাত্রা (Top-Right) */
-                transform: translate(110vw, -110vh) rotate(15deg); 
-                opacity: 0; 
-            }
+            100% { transform: translate(110vw, -110vh) rotate(15deg); opacity: 0; }
         }
 
-        .moon {
+        .moon-global {
             position: absolute; top: 10%; right: 10%; width: 55px; height: 55px;
             background: #fdfae5; border-radius: 50%;
             box-shadow: 0 0 20px rgba(253, 250, 229, 0.4);
+            z-index: 2;
+        }
+
+        /* ================= PAGE 1: COUNTDOWN STYLE ================= */
+        #countdownPage {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 5;
+            transition: opacity 0.8s ease;
         }
 
         #astro {
@@ -117,36 +128,468 @@
             50% { transform: translateY(-30px); }
         }
         .jumping { animation: jumpEffect 1.2s ease-in-out; }
+
+        /* ================= PAGE 2: LOCK SCREEN STYLE ================= */
+        #lockScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 40px;
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 0.8s ease, visibility 0.8s;
+        }
+
+        .rocket-entry {
+            position: absolute;
+            bottom: -50px;
+            left: -50px;
+            font-size: 24px;
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
+            animation: flyToMoonEntry 15s linear infinite;
+            z-index: 2;
+            transform: rotate(15deg);
+        }
+        @keyframes flyToMoonEntry {
+            0% { transform: translate(0, 0) rotate(15deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translate(110vw, -110vh) rotate(15deg); opacity: 0; }
+        }
+
+        .moon-entry {
+            position: absolute; top: 10%; right: 10%; width: 55px; height: 55px;
+            background: #fdfae5; border-radius: 50%;
+            box-shadow: 0 0 20px rgba(253, 250, 229, 0.4);
+            z-index: 2;
+        }
+
+        #astroEntry {
+            position: absolute; width: 24px; height: 32px; z-index: 100;
+            top: 11%; right: 12%;
+            display: flex; flex-direction: column; align-items: center;
+            transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .astro-head-e { 
+            width: 18px; height: 16px; background: white; 
+            border-radius: 8px 8px 5px 5px; border: 1.5px solid #ddd;
+        }
+        .astro-visor-e {
+            width: 12px; height: 7px; background: #334; border-radius: 3px; margin: 3.5px auto;
+        }
+        .astro-body-e { 
+            width: 20px; height: 15px; background: white; 
+            border-radius: 5px 5px 7px 7px; margin-top: -2px; border: 1.5px solid #ddd;
+        }
+        .hi-bubble-e {
+            position: absolute; top: -32px; background: #ff69b4; 
+            color: white; padding: 3px 8px; border-radius: 10px; 
+            font-size: 10px; font-weight: bold; display: none; white-space: nowrap;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .lock-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .password-boxes {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 45px;
+        }
+        .pass-box {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #2ed573;
+            border-radius: 12px;
+            background: rgba(5, 11, 24, 0.6);
+            box-shadow: 0 0 12px rgba(46, 213, 115, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #ff4757;
+            transition: all 0.2s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+        .error-shake {
+            animation: shake 0.4s ease-in-out;
+            border-color: #ff4757 !important;
+            box-shadow: 0 0 12px rgba(255, 71, 87, 0.5) !important;
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px 25px;
+            justify-items: center;
+            width: 100%;
+        }
+
+        .cake-btn {
+            position: relative;
+            width: 65px;
+            height: 50px;
+            background: #ffb6c1; 
+            border-radius: 4px 4px 12px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.1s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+        }
+        .cake-btn::before {
+            content: "";
+            position: absolute;
+            top: -4px; left: 0; width: 100%; height: 12px;
+            background: #fff0f5; border-radius: 10px 10px 4px 4px;
+            box-shadow: inset 0 -2px 3px rgba(255,182,193,0.4);
+        }
+        .cake-btn::after {
+            content: "";
+            position: absolute;
+            top: 6px; left: 0; width: 100%; height: 4px;
+            background: #fff0f5; border-radius: 0 0 4px 4px;
+            background-image: radial-gradient(circle at 50% 100%, transparent 3px, #fff0f5 4px);
+            background-size: 10px 6px; background-position: 0 -3px;
+        }
+        .cake-btn span {
+            position: relative; z-index: 5; color: #ff4757;
+            font-size: 18px; font-weight: bold; margin-top: 4px;
+        }
+        .cake-btn:active { transform: scale(0.92); }
+
+        .candle {
+            position: absolute; top: -16px; left: 50%; transform: translateX(-50%);
+            width: 6px; height: 16px;
+            background: linear-gradient(to right, #ffffff, #eccc68);
+            border-radius: 2px 2px 0 0; z-index: 10;
+        }
+        .candle::before {
+            content: ''; position: absolute; top: -3px; left: 50%; transform: translateX(-50%);
+            width: 1.5px; height: 4px; background: #333;
+        }
+        .flame {
+            position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+            width: 10px; height: 14px;
+            background: radial-gradient(circle at 50% 80%, #fffa65 20%, #ff9f43 50%, #ff4757 100%);
+            border-radius: 50% 50% 20% 20% / 60% 60% 40% 40%;
+            box-shadow: 0 0 10px rgba(255, 159, 67, 0.8), 0 0 20px rgba(255, 71, 87, 0.4);
+            animation: flicker 0.15s ease-in-out infinite alternate;
+            transform-origin: center bottom;
+        }
+        @keyframes flicker {
+            0% { transform: translateX(-50%) scaleX(0.9) scaleY(0.95) rotate(-1deg); }
+            100% { transform: translateX(-50%) scaleX(1.1) scaleY(1.05) rotate(1deg); }
+        }
+
+        /* ================= AUDIO SECURITY FIX OVERLAY ================= */
+        #audioFixOverlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 11, 24, 0.96); z-index: 30; flex-direction: column;
+            align-items: center; justify-content: center; opacity: 0; transition: opacity 0.5s ease;
+        }
+        .gift-box { font-size: 85px; cursor: pointer; animation: bounceGift 1.2s infinite ease-in-out; filter: drop-shadow(0 0 20px rgba(255, 71, 87, 0.6)); }
+        @keyframes bounceGift { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15) rotate(5deg); } }
+        .fix-text { font-size: 18px; margin-top: 25px; color: #fff; font-weight: bold; letter-spacing: 1px; text-align: center; line-height: 1.5; }
+
+        /* ================= PAGE 3: BIRTHDAY PAGE STYLE ================= */
+        #birthdayPage {
+            display: none;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease;
+            position: absolute;
+            top: 0; left: 0;
+            z-index: 25; 
+        }
+
+        .space {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(to bottom, #090a12 0%, #141724 50%, #0d0f18 100%);
+        }
+
+        .stars-layer-1, .stars-layer-2, .stars-layer-3 {
+            position: absolute; width: 100%; height: 100%; z-index: 0;
+        }
+        .stars-layer-1 {
+            background-image: 
+                radial-gradient(1px 1px at 25px 40px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 85px 150px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 140px 70px, rgba(255,255,255,0.95), rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 220px 310px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 340px 190px, rgba(255,255,255,0.9), rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 410px 420px, #ffffff, rgba(0,0,0,0));
+            background-size: 350px 350px; animation: twinkle-fast 3s infinite ease-in-out;
+        }
+        .stars-layer-2 {
+            background-image: 
+                radial-gradient(1px 1px at 60px 90px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 110px 220px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 170px 30px, rgba(255,255,255,0.9), rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 260px 410px, #ffffff, rgba(0,0,0,0));
+            background-size: 300px 300px; animation: twinkle-slow 4.5s infinite ease-in-out reverse;
+        }
+        .stars-layer-3 {
+            background-image: 
+                radial-gradient(2px 2px at 90px 310px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 200px 170px, #ffffff, rgba(0,0,0,0)),
+                radial-gradient(2.5px 2.5px at 370px 210px, rgba(255,255,255,0.95), rgba(0,0,0,0));
+            background-size: 400px 400px; animation: twinkle-glow 6s infinite ease-in-out;
+        }
+
+        @keyframes twinkle-fast { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+        @keyframes twinkle-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+        @keyframes twinkle-glow { 0%, 20%, 80%, 100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); } }
+
+        .earth {
+            position: absolute; top: 40px; right: 50px; width: 45px; height: 45px;
+            background: radial-gradient(circle at 30% 30%, #4b7bec 0%, #3867d6 60%, #2b52b2 100%);
+            border-radius: 50%; box-shadow: 0 0 15px rgba(75, 123, 236, 0.4), inset -5px -5px 10px rgba(0,0,0,0.4);
+            z-index: 2; overflow: hidden;
+        }
+        .earth::before {
+            content: ''; position: absolute; width: 100%; height: 100%;
+            background-image: 
+                radial-gradient(circle at 30% 40%, #20bf6b 12px, transparent 13px),
+                radial-gradient(circle at 75% 35%, #26de81 8px, transparent 9px),
+                radial-gradient(circle at 55% 75%, #20bf6b 10px, transparent 11px),
+                radial-gradient(circle at 15% 75%, #26de81 6px, transparent 7px);
+            opacity: 0.85;
+        }
+
+        .moon {
+            position: absolute; bottom: -25vh; left: 50%; transform: translateX(-50%);
+            width: 85vw; height: 85vw; max-width: 550px; max-height: 550px;
+            background: radial-gradient(circle at 50% 20%, #d4ccb6 0%, #a89f8c 50%, #6e6657 100%);
+            border-radius: 50%; box-shadow: 0 0 35px rgba(212, 204, 182, 0.15), inset -20px -20px 50px rgba(0,0,0,0.35);
+            z-index: 3;
+        }
+        .crater { position: absolute; background-color: rgba(64, 57, 46, 0.18); border-radius: 50%; box-shadow: inset 3px 3px 6px rgba(0,0,0,0.2), 1px 1px 2px rgba(255,255,255,0.05); }
+        .c1 { top: 22%; left: 33%; width: 55px; height: 38px; }
+        .c2 { top: 16%; right: 28%; width: 40px; height: 28px; }
+        .c3 { top: 34%; left: 47%; width: 75px; height: 48px; }
+        .c4 { top: 28%; left: 18%; width: 30px; height: 22px; }
+
+        .astronaut {
+            position: absolute; bottom: 27vh; left: 50%; transform: translateX(-50%);
+            width: 72px; height: 105px; z-index: 5; animation: float 4s ease-in-out infinite;
+            filter: drop-shadow(0 8px 14px rgba(255,255,255,.08));
+        }
+        @keyframes float { 0%, 100% { transform: translateX(-50%) translateY(0px); } 50% { transform: translateX(-50%) translateY(-8px); } }
+
+        .helmet {
+            position: absolute; width: 66px; height: 60px; left: 3px; top: 0; border-radius: 50%;
+            background: linear-gradient(to bottom, #ffffff, #edf1f7); border: 3px solid #252736;
+            box-shadow: 0 5px 12px rgba(0,0,0,.18), inset 0 -4px 6px rgba(0,0,0,.06), inset 0 3px 4px rgba(255,255,255,.8); z-index: 4;
+        }
+        .visor {
+            position: absolute; width: 46px; height: 34px; left: 50%; top: 11px; transform: translateX(-50%);
+            border-radius: 20px; overflow: hidden; background: linear-gradient(145deg, #4d3d68 0%, #18141f 100%);
+            border: 2px solid #252736; box-shadow: inset 0 -4px 8px rgba(0,0,0,.35);
+        }
+        .visor::before { content: ''; position: absolute; width: 14px; height: 7px; top: 4px; left: 6px; border-radius: 50%; background: rgba(255,255,255,.35); transform: rotate(-10deg); }
+        .eye { position: absolute; width: 5px; height: 10px; background: #fff; border-radius: 50%; top: 11px; animation: blink 4s infinite; }
+        .eye-left { left: 13px; } .eye-right { right: 13px; }
+        @keyframes blink { 0%, 45%, 100% { height: 10px; } 50% { height: 2px; } }
+        .blush { position: absolute; width: 6px; height: 4px; border-radius: 50%; background: #ff9cb0; opacity: .5; bottom: 7px; }
+        .blush-left { left: 9px; } .blush-right { right: 9px; }
+        .bag { position: absolute; width: 15px; height: 28px; background: #d8dde6; border: 2.5px solid #252736; border-radius: 8px; left: 4px; top: 49px; z-index: 1; }
+        .suit { position: absolute; width: 46px; height: 50px; background: linear-gradient(to bottom, #ffffff, #eceff6); border: 2.5px solid #252736; border-radius: 18px 18px 14px 14px; left: 13px; top: 43px; z-index: 3; box-shadow: inset -3px -3px 0 rgba(0,0,0,.04); }
+        .panel { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 18px; height: 12px; background: #dfe4ec; border: 2px solid #252736; border-radius: 4px; }
+        .panel::before { content: ''; position: absolute; width: 4px; height: 4px; top: 2px; left: 2px; border-radius: 50%; background: #6ea8ff; }
+        
+        .arm-left, .arm-right { position: absolute; width: 13px; height: 28px; background: #f5f6f8; border: 2.5px solid #252736; border-radius: 8px; }
+        .arm-left { left: 1px; top: 49px; transform: rotate(20deg); }
+        .arm-right { right: -1px; top: 47px; transform-origin: top center; animation: wave 1.2s ease-in-out infinite; }
+        @keyframes wave { 0%, 100% { transform: rotate(-30deg); } 50% { transform: rotate(-120deg); } }
+        
+        .leg { position: absolute; width: 13px; height: 21px; background: #e7eaf1; border: 2.5px solid #252736; bottom: 2px; border-radius: 0 0 9px 9px; }
+        .leg-left { left: 21px; } .leg-right { right: 21px; }
+
+        .float-star { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #fff; animation: minifloat 3s infinite ease-in-out; }
+        .fs1 { left: -10px; top: 10px; } .fs2 { right: -8px; top: 60px; animation-delay: 1s; }
+        @keyframes minifloat { 0%, 100% { opacity: .4; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-6px); } }
+
+        .bubble {
+            position: absolute; top: -26px; right: -40px; background: linear-gradient(135deg, #ff5f8f, #ff7db2);
+            color: #fff; padding: 6px 12px; border-radius: 18px; font-weight: bold; font-size: 12px;
+            box-shadow: 0 5px 14px rgba(255, 95, 143, .35); animation: bubble-bounce 1.5s infinite ease-in-out; z-index: 10; white-space: nowrap;
+        }
+        .bubble::after { content: ''; position: absolute; bottom: -5px; left: 14px; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #ff5f8f; }
+
+        .flight-container {
+            position: absolute; bottom: -150px; left: -400px; display: flex; align-items: center; z-index: 1;
+            transform: rotate(-45deg); transform-origin: center; animation: fly-diagonal-slow 14s linear infinite;
+        }
+        @keyframes fly-diagonal-slow { 0% { bottom: -200px; left: -550px; } 100% { bottom: 115vh; left: 115vw; } }
+
+        .birthday-banner {
+            background: linear-gradient(135deg, #ff4757, #ff6b81); color: #ffffff; padding: 8px 18px;
+            font-size: 15px; font-weight: 900; letter-spacing: 1px; border-radius: 5px; border: 2px solid #252736;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); white-space: nowrap; display: inline-block; position: relative;
+            animation: banner-wave 0.8s ease-in-out infinite alternate;
+        }
+        @keyframes banner-wave { 0% { transform: translateY(-2px); } 100% { transform: translateY(2px); } }
+        .rope { width: 35px; height: 4px; background: none; border-top: 2px dashed #eccc68; border-bottom: 1px solid #a87d22; display: inline-block; }
+
+        .rocket-birthday {
+            position: relative; width: 54px; height: 30px; background: #f1f2f6; border: 2.5px solid #252736;
+            border-radius: 45% 130% 130% 45% / 50% 50% 50% 50%; display: inline-block; box-shadow: inset 0 -3px 0 rgba(0,0,0,0.1);
+        }
+        .rocket-birthday::after { content: ''; position: absolute; right: -2.5px; top: -2.5px; width: 20px; height: 30px; background: #ff4757; border: 2.5px solid #252736; border-radius: 0 100% 100% 0 / 0 50% 50% 0; }
+        .rocket-window { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; background: #70a1ff; border: 2px solid #252736; border-radius: 50%; z-index: 2; }
+        .rocket-fin-top { position: absolute; top: -11px; left: 4px; width: 14px; height: 12px; background: #ff6b81; border: 2.5px solid #252736; border-radius: 6px 0 0 0; transform: skewX(-25deg); }
+        .rocket-fin-bottom { position: absolute; bottom: -11px; left: 4px; width: 14px; height: 12px; background: #ff6b81; border: 2.5px solid #252736; border-radius: 0 0 0 6px; transform: skewX(25deg); }
+        .rocket-fire { position: absolute; left: -24px; top: 50%; transform: translateY(-50%); width: 24px; height: 12px; background: linear-gradient(to right, transparent, #ffa502, #ff4757); clip-path: polygon(100% 0%, 0% 50%, 100% 100%, 70% 50%); animation: exhaust 0.15s linear infinite alternate; }
+        @keyframes exhaust { 0% { transform: translateY(-50%) scaleY(0.9) scaleX(0.9); } 100% { transform: translateY(-50%) scaleY(1.1) scaleX(1.2); } }
     </style>
 </head>
 <body>
 
+    <audio id="bgMusic" loop src="happy-birthday.mp3"></audio>
+
     <div id="starContainer"></div>
-    <div class="moon"></div>
+    <div class="moon-global"></div>
 
-    <div id="astro">
-        <div class="hi-bubble" id="hi">Hi Tiku! 👋</div>
-        <div class="astro-head"><div class="astro-visor"></div></div>
-        <div class="astro-body"></div>
+    <div id="countdownPage">
+        <div id="astro">
+            <div class="hi-bubble" id="hi">Hi Tiku! 👋</div>
+            <div class="astro-head"><div class="astro-visor"></div></div>
+            <div class="astro-body"></div>
+        </div>
+
+        <div class="title">Nearly there...</div>
+
+        <div class="countdown">
+            <div class="box" id="b1"><span class="num" id="d">00</span><span class="label">Days</span></div>
+            <div class="box" id="b2"><span class="num" id="h">00</span><span class="label">Hours</span></div>
+            <div class="box" id="b3"><span class="num" id="m">00</span><span class="label">Min</span></div>
+            <div class="box" id="b4"><span class="num" id="s">00</span><span class="label">Sec</span></div>
+        </div>
+
+        <div class="btn" onclick="triggerLockScreen()">Blow out the candle</div>
+
+        <div class="secret-msg">Tiku guess koro eitah kiser jonno😼?</div>
     </div>
 
-    <div class="title">Nearly there...</div>
+    <div id="lockScreen">
+        <div id="astroEntry">
+            <div class="hi-bubble-e" id="hiEntry">Hi Tiku!Please enter the correct password👋</div>
+            <div class="astro-head-e"><div class="astro-visor-e"></div></div>
+            <div class="astro-body-e"></div>
+        </div>
 
-    <div class="countdown">
-        <div class="box" id="b1"><span class="num" id="d">00</span><span class="label">Days</span></div>
-        <div class="box" id="b2"><span class="num" id="h">00</span><span class="label">Hours</span></div>
-        <div class="box" id="b3"><span class="num" id="m">00</span><span class="label">Min</span></div>
-        <div class="box" id="b4"><span class="num" id="s">00</span><span class="label">Sec</span></div>
+        <div class="lock-container">
+            <div class="password-boxes">
+                <div class="pass-box" id="dot1"></div>
+                <div class="pass-box" id="dot2"></div>
+                <div class="pass-box" id="dot3"></div>
+                <div class="pass-box" id="dot4"></div>
+            </div>
+
+            <div class="keypad">
+                <div class="cake-btn" onclick="pressKey('1')"><div class="candle"><div class="flame"></div></div><span>1</span></div>
+                <div class="cake-btn" onclick="pressKey('2')"><div class="candle"><div class="flame"></div></div><span>2</span></div>
+                <div class="cake-btn" onclick="pressKey('3')"><div class="candle"><div class="flame"></div></div><span>3</span></div>
+                <div class="cake-btn" onclick="pressKey('4')"><div class="candle"><div class="flame"></div></div><span>4</span></div>
+                <div class="cake-btn" onclick="pressKey('5')"><div class="candle"><div class="flame"></div></div><span>5</span></div>
+                <div class="cake-btn" onclick="pressKey('6')"><div class="candle"><div class="flame"></div></div><span>6</span></div>
+                <div class="cake-btn" onclick="pressKey('7')"><div class="candle"><div class="flame"></div></div><span>7</span></div>
+                <div class="cake-btn" onclick="pressKey('8')"><div class="candle"><div class="flame"></div></div><span>8</span></div>
+                <div class="cake-btn" onclick="pressKey('9')"><div class="candle"><div class="flame"></div></div><span>9</span></div>
+                <div class="cake-btn" onclick="clearKeys()"><div class="candle"><div class="flame"></div></div><span>*</span></div>
+                <div class="cake-btn" onclick="pressKey('0')"><div class="candle"><div class="flame"></div></div><span>0</span></div>
+                <div class="cake-btn" onclick="checkPassword()"><div class="candle"><div class="flame"></div></div><span>#</span></div>
+            </div>
+        </div>
     </div>
 
-    <div class="btn">Blow out the candle</div>
+    <div id="audioFixOverlay">
+        <div class="gift-box" onclick="activateSurprise()">🎁</div>
+        <div class="fix-text">Password verified ! ✨<br>Click on the gift to unwrap!</div>
+    </div>
 
-    <div class="secret-msg">Tiku guess koro eitah kiser jonno😼?</div>
+    <div id="birthdayPage">
+        <div class="space">
+            <div class="stars-layer-1"></div>
+            <div class="stars-layer-2"></div>
+            <div class="stars-layer-3"></div>
+
+            <div class="earth"></div>
+
+            <div class="flight-container">
+                <div class="birthday-banner">HAPPY BIRTHDAY TIKU</div>
+                <div class="rope"></div>
+                <div class="rocket-birthday">
+                    <div class="rocket-window"></div>
+                    <div class="rocket-fin-top"></div>
+                    <div class="rocket-fin-bottom"></div>
+                    <div class="rocket-fire"></div>
+                </div>
+            </div>
+
+            <div class="astronaut">
+                <div class="float-star fs1"></div>
+                <div class="float-star fs2"></div>
+                <div class="bubble">Happy Birthday Tikly🎂🥳</div>
+                <div class="helmet">
+                    <div class="visor">
+                        <div class="eye eye-left"></div>
+                        <div class="eye eye-right"></div>
+                        <div class="blush blush-left"></div>
+                        <div class="blush blush-right"></div>
+                    </div>
+                </div>
+                <div class="bag"></div>
+                <div class="suit">
+                    <div class="panel"></div>
+                </div>
+                <div class="arm-left"></div>
+                <div class="arm-right"></div>
+                <div class="leg leg-left"></div>
+                <div class="leg leg-right"></div>
+            </div>
+
+            <div class="moon">
+                <div class="crater c1"></div>
+                <div class="crater c2"></div>
+                <div class="crater c3"></div>
+                <div class="crater c4"></div>
+            </div>
+        </div>
+    </div>
 
     <script>
+        const CORRECT_PASSWORD = "0524"; 
+        let currentInput = "";
+        const boxes = ['b1', 'b2', 'b3', 'b4'];
+        const entryBoxes = ['dot1', 'dot2', 'dot3', 'dot4'];
+
         function createStars() {
             const container = document.getElementById('starContainer');
-            for (let i = 0; i < 80; i++) {
+            container.innerHTML = ''; 
+            for (let i = 0; i < 100; i++) { 
                 const star = document.createElement('div');
                 star.className = 'star';
                 const size = Math.random() * 2 + 1 + 'px';
@@ -159,7 +602,6 @@
             }
         }
 
-        // একটি রকেট তৈরির ফাংশন
         function createSingleRocket() {
             const rocket = document.createElement('div');
             rocket.className = 'rocket';
@@ -182,7 +624,6 @@
             update();
         }
 
-        const boxes = ['b1', 'b2', 'b3', 'b4'];
         function jumpSequence(step) {
             if (step >= boxes.length) {
                 const hi = document.getElementById('hi');
@@ -191,7 +632,7 @@
             }
             const astro = document.getElementById('astro');
             const targetBox = document.getElementById(boxes[step]);
-            if(!astro || !targetBox) return;
+            if(!astro || !targetBox || document.getElementById('countdownPage').style.display === 'none') return;
             
             const rect = targetBox.getBoundingClientRect();
             astro.style.top = (rect.top - 40) + 'px';
@@ -205,11 +646,129 @@
             }, 950);
         }
 
+        function triggerLockScreen() {
+            const countdownPage = document.getElementById('countdownPage');
+            countdownPage.style.opacity = '0';
+            
+            setTimeout(() => {
+                countdownPage.style.display = 'none';
+                
+                const lockScreen = document.getElementById('lockScreen');
+                lockScreen.style.display = 'flex';
+                setTimeout(() => {
+                    lockScreen.style.opacity = '1';
+                    startAstroJumps(0); 
+                }, 50);
+            }, 800);
+        }
+
+        function pressKey(num) {
+            if (currentInput.length < 4) {
+                currentInput += num;
+                updateBoxes();
+            }
+            if (currentInput.length === 4) {
+                setTimeout(checkPassword, 300);
+            }
+        }
+
+        function clearKeys() {
+            currentInput = "";
+            updateBoxes();
+        }
+
+        function updateBoxes() {
+            for (let i = 1; i <= 4; i++) {
+                const box = document.getElementById('dot' + i);
+                if (i <= currentInput.length) {
+                    box.innerText = "★"; 
+                } else {
+                    box.innerText = "";
+                }
+                box.classList.remove('error-shake');
+            }
+        }
+
+        function checkPassword() {
+            if (currentInput === CORRECT_PASSWORD) {
+                const lockScreen = document.getElementById('lockScreen');
+                lockScreen.style.opacity = '0';
+                setTimeout(() => {
+                    lockScreen.style.display = 'none';
+                    
+                    const overlay = document.getElementById('audioFixOverlay');
+                    overlay.style.display = 'flex';
+                    setTimeout(() => { overlay.style.opacity = '1'; }, 50);
+                }, 800);
+
+            } else {
+                for (let i = 1; i <= 4; i++) {
+                    document.getElementById('dot' + i).classList.add('error-shake');
+                }
+                setTimeout(() => {
+                    currentInput = "";
+                    updateBoxes();
+                }, 600);
+            }
+        }
+
+        function activateSurprise() {
+            var music = document.getElementById("bgMusic");
+            music.play().catch(e => console.log("Audio triggered"));
+
+            const overlay = document.getElementById('audioFixOverlay');
+            overlay.style.opacity = '0';
+            
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                
+                const bdayPage = document.getElementById('birthdayPage');
+                bdayPage.style.display = 'block';
+                setTimeout(() => {
+                    bdayPage.style.opacity = '1';
+                }, 50);
+            }, 500);
+        }
+
+        function startAstroJumps(step) {
+            const astro = document.getElementById('astroEntry');
+            if (!astro || document.getElementById('lockScreen').style.display === 'none') return;
+
+            if (step >= entryBoxes.length) {
+                const hi = document.getElementById('hiEntry');
+                if (hi) hi.style.display = 'block';
+                return;
+            }
+
+            const targetBox = document.getElementById(entryBoxes[step]);
+            if (!targetBox) return;
+
+            const rect = targetBox.getBoundingClientRect();
+            astro.style.top = (rect.top - 36) + 'px';
+            astro.style.left = (rect.left + rect.width / 2 - 12) + 'px';
+            astro.style.right = 'auto';
+
+            astro.classList.add('jumping');
+            
+            setTimeout(() => {
+                astro.classList.remove('jumping');
+                startAstroJumps(step + 1);
+            }, 900);
+        }
+
         window.onload = function() {
             createStars();
             createSingleRocket();
             startCountdown();
             setTimeout(() => jumpSequence(0), 1500);
+        };
+
+        window.onresize = function() {
+            if(document.getElementById('countdownPage').style.display !== 'none') {
+                jumpSequence(boxes.length); 
+            } else if(currentInput !== CORRECT_PASSWORD) {
+                startAstroJumps(entryBoxes.length); 
+            }
         };
     </script>
 </body>
